@@ -10,7 +10,7 @@ def beautify(article):
 	return BeautifulSoup(req.text, 'html.parser')
 
 
-# page_rand() - return a random page
+# page_rand - return a random page
 def page_rand():
 	htm = beautify('Special:Random')
 	return htm.find(id='firstHeading').text
@@ -20,14 +20,6 @@ def page_rand():
 def cat_rand():
 	htm = beautify('Special:Random')
 	return sample(htm.find(id='mw-normal-catlinks').find_all('a')[1:], 1)[0].text
-
-
-# cat_sample - return n random pages from a category root
-# currently accumulates the list, then samples--could be better to go depth-first 
-def cat_sample(root, n=1, depth=0):
-	pgs = cat_pages(root, depth)
-	if pgs: return (sample(pgs, n)[0] if n==1 else sample(pgs, n))
-	else: return False
 
 
 # filter for good links
@@ -65,32 +57,44 @@ def telephone(start, n, say=0):
 			log.append( sample(get_links(log[-1]), 1)[0] )
 			if say: print(f'-> {log[-1]} ', end='')
 		except ValueError:
-			# print(f'!!no links found for {log[-1]} - leaping randomly')
 			log.append( get_links(page_rand()) )
 			if say: print(f'?? {log[-1]} ', end='')
 	return log
 
 
-# cat_pages - return a list of wikipedia pages under a given category
-def cat_pages(root, depth=0):
+"""
+cat_pages - return a list of n wikipedia pages randomly selected from a category,
+and its subcategories. default value for n will return the entire list.
+set subs to 0 to limit search to only pages in top level category.
+"""
+
+def cat_pages(root, n=0, subs=1):
 	root = 'Category:' + root.replace(' ','_')
 	master = []
 	html = beautify(root)
 
-	if html.find(id='mw-pages') is None:
-		return False
-
-	page_groups = html.find(id='mw-pages').find_all('div', class_='mw-category-group')
-	for g in page_groups:
-		for li in g.find_all('li'):
-			if li.text.startswith('Template:'): continue
-			master.append(li.text)
-
-	if depth:
-		subcat_groups = html.find(id='mw-subcategories').find_all('div', class_='mw-category-group')
-		for g in subcat_groups:
+	try:
+		page_groups = html.find(id='mw-pages').find_all('div', class_='mw-category-group')
+		for g in page_groups:
 			for li in g.find_all('li'):
-				text = cat_pages(li.find('a').text)
-				if text: master += text
+				if li.text.startswith('Template:'): continue
+				master.append(li.text)
+	except AttributeError:
+		print(f'no pages found for \'{html.find(id="firstHeading").text}\'')
+
+	if subs:
+		try:
+			subcat_groups = html.find(id='mw-subcategories').find_all('div', class_='mw-category-group')
+			for g in subcat_groups:
+				for li in g.find_all('li'):
+					text = cat_pages(li.find('a').text, subs=0)
+					if text: master += text
+		except AttributeError:
+			print(f'no subcategories found for \'{html.find(id="firstHeading").text}\'')
 	
-	return master
+	return master if (n==0 or n>len(master)) else sample(master, n)
+
+
+
+
+
