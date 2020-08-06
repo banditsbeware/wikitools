@@ -22,6 +22,17 @@ def cat_rand():
 	return sample(htm.find(id='mw-normal-catlinks').find_all('a')[1:], 1)[0].text
 
 
+# cats - return a list of categories for a page (type: 'normal' or 'hidden')
+def cats(page, vis):
+	if vis not in ['normal', 'hidden']:
+		raise ValueError('vis must be \'normal\' or \'hidden\'')
+	htm = beautify(page)
+	xpr = 'mw-'+vis+'-catlinks'
+	try:
+		return ['Category:'+c.text for c in htm.find(id=xpr).find_all('a')[1:]]
+	except AttributeError:
+		print(f'{page} has no {vis} categories')
+
 # filter for good links
 def linkable(tag):
 	if tag.has_attr('href') and tag.parent.name == 'p':
