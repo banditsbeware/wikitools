@@ -5,20 +5,24 @@ author: david rademacher
 
 from wikitools import *
 from page import *
+from random import sample
 
 print('initializing WikiTools CLI...')
 user_pg = page()
 print('enter \'h\' for help ✔︎')
 
+comm = dict()
+comm['c'] = 'print page categories'
+comm['n'] = 'get a new page'
+comm['j'] = 'take a journey'
+comm['h'] = 'display commands'
+comm['q'] = 'quit'
+
 def print_commands():
-    print(' c -> print page categories')
-    print(' n -> get a new page')
-    print(' j -> take a journey')
-    print(' h -> display commands')
-    print(' q -> quit')
+    for k,v in comm.items():
+        print(f' {k} -> {v}')
 
 def prompt():
-    global user_pg
     return input(f'\n▶︎ {user_pg} ◀︎\n  .: ')
 
 def print_cats():
@@ -29,9 +33,17 @@ def print_cats():
 def new_page():
     global user_pg
     n = input('\nrandom page? (y/n) ')
+    if n not in ['y','n']: new_page()
     if n == 'y': user_pg = page()
-    elif n == 'n': user_pg = page(input('\nquery: '))
-    else: new_page()
+    if n == 'n':
+        qry = input('query: ')
+        res = search(qry)
+        while isinstance(res, list):
+            print(f'\nno page found for \"{qry}\".\nsome suggestions:')
+            for sg in res:
+                print(f' ・{sg}')
+            res = search(input('\nquery: '))
+        user_pg = res
 
 def take_journey():
     global user_pg
@@ -41,10 +53,9 @@ def take_journey():
     if k == 'y': user_pg = page(dest)
 
 while True:
-    n = prompt() 
-    if n == 'q': break
+    n = prompt()
     if n == 'c': print_cats()
     if n == 'n': new_page()
     if n == 'h': print_commands()
     if n == 'j': take_journey()
-        
+    if n == 'q': break

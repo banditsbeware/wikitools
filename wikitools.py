@@ -7,10 +7,40 @@ from random import sample
 from bs4 import BeautifulSoup
 import requests
 
+class page:
+	def __init__(self, query='Special:Random'):
+		self.htm = beautify(query)
+		if len(self.htm(id='noarticletext')):
+			raise ValueError(f'no wikipedia page exists for \'{query}\'')
+		self.title = self.htm.find(id='firstHeading').text
+		self.cats = cats(self.title, 'normal')
+		self.hcats = cats(self.title, 'hidden')
 
-# todo: fuzzier search
+	def is_cat(self, cat):
+		return 'Category:'+cat in self.cats
 
-# beautify - get the BeautifulSoup of a wikipedia article 
+	def __repr__(self):
+		return 'page()'
+
+	def __str__(self):
+		return self.title
+
+
+search_stem = 'https://en.wikipedia.org/wiki/Special:Search?search='
+# fuzzier search than beautify
+# returns a list of possible results for the query.
+# return a page if query exists.
+def search(query):
+    #query = query.replace(' ','+')
+    req = requests.get(search_stem + query + '&ns0=1')
+    results = BeautifulSoup(req.text, 'html.parser')
+    try:
+        return [link.text for link in results.find('ul',class_='mw-search-results').find_all('a')]
+    except AttributeError:
+        return page(query)
+
+
+# beautify - get the BeautifulSoup of a wikipedia article
 def beautify(article):
     leaf = article[0] if isinstance(article, list) else article
     req = requests.get('https://en.wikipedia.org/wiki/'+leaf)
@@ -110,13 +140,8 @@ def cat_pages(root, n=0, subs=1, say=False):
                     if text: master += text
         except AttributeError:
             print(f'no subcategories found for \'{html.find(id="firstHeading").text}\'')
-    
+
     if say:
         print(f'{root}')
         for pg in master: print(f' - {pg}')
     else: return master if (n==0 or n>len(master)) else sample(master, n)
-
-
-
-
-
