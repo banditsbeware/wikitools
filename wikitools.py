@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import requests
 
 
+# todo: fuzzier search
+
 # beautify - get the BeautifulSoup of a wikipedia article 
 def beautify(article):
     leaf = article[0] if isinstance(article, list) else article
@@ -31,7 +33,9 @@ def cats(page, vis):
     try:
         return ['Category:'+c.text for c in htm.find(id=xpr).find_all('a')[1:]]
     except AttributeError:
-        print(f'{page} has no {vis} categories')
+        # print(f'{page} has no {vis} categories')
+        pass
+
 
 # filter for good links
 def linkable(tag):
@@ -53,7 +57,7 @@ def get_links(page):
 
 # journey - telephone but with output
 def journey(start, n):
-    telephone(start, n, say=1)
+    return telephone(start, n, say=1)
 
 
 # telephone - travel along n linked pages

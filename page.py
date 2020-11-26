@@ -16,4 +16,4 @@ class page:
 		return 'page()'
 
 	def __str__(self):
-		return f'page(\'{self.title}\')'
+		return self.title
