@@ -1,3 +1,8 @@
+'''
+WikiTools -- page.py
+author: david rademacher
+'''
+
 from wikitools import *
 
 class page:

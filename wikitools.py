@@ -1,3 +1,8 @@
+'''
+WikiTools -- wikitools.py
+author: david rademacher
+'''
+
 from random import sample
 from bs4 import BeautifulSoup
 import requests

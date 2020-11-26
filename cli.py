@@ -1,3 +1,8 @@
+'''
+WikiTools -- cli.py
+author: david rademacher
+'''
+
 from wikitools import *
 from page import *
 
