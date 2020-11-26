@@ -8,22 +8,24 @@ from bs4 import BeautifulSoup
 import requests
 
 class page:
-	def __init__(self, query='Special:Random'):
-		self.htm = beautify(query)
-		if len(self.htm(id='noarticletext')):
-			raise ValueError(f'no wikipedia page exists for \'{query}\'')
-		self.title = self.htm.find(id='firstHeading').text
-		self.cats = cats(self.title, 'normal')
-		self.hcats = cats(self.title, 'hidden')
+    def __init__(self, query='Special:Random'):
+        self.htm = beautify(query)
+        if len(self.htm(id='noarticletext')):
+            print(f'unable to find {query}.\nhere\'s a random page')
+            self.htm = beautify('Special:Random')
+        self.title = self.htm.find(id='firstHeading').text
+        self.cats = cats(self.title, 'normal')
+        self.hcats = cats(self.title, 'hidden')
+        self.toc = get_toc(self.htm)
 
-	def is_cat(self, cat):
-		return 'Category:'+cat in self.cats
+    def is_cat(self, cat):
+        return 'Category:'+cat in self.cats
 
-	def __repr__(self):
-		return 'page()'
+    def __repr__(self):
+        return 'page()'
 
-	def __str__(self):
-		return self.title
+    def __str__(self):
+        return self.title
 
 
 search_stem = 'https://en.wikipedia.org/wiki/Special:Search?search='
@@ -45,6 +47,10 @@ def beautify(article):
     leaf = article[0] if isinstance(article, list) else article
     req = requests.get('https://en.wikipedia.org/wiki/'+leaf)
     return BeautifulSoup(req.text, 'html.parser')
+
+# get_contents - get the list of content section titles
+def get_toc(htm):
+    return [link.text for link in htm.find('div',id='toc').find_all('a')]
 
 
 # page_rand - return a random page
@@ -129,7 +135,8 @@ def cat_pages(root, n=0, subs=1, say=False):
                 if li.text.startswith('Template:'): continue
                 master.append(li.text)
     except AttributeError:
-        print(f'no pages found for \'{html.find(id="firstHeading").text}\'')
+        #print(f'no pages found for \'{html.find(id="firstHeading").text}\'')
+        pass
 
     if subs:
         try:
@@ -139,7 +146,8 @@ def cat_pages(root, n=0, subs=1, say=False):
                     text = cat_pages(li.find('a').text, subs=0)
                     if text: master += text
         except AttributeError:
-            print(f'no subcategories found for \'{html.find(id="firstHeading").text}\'')
+            # print(f'no subcategories found for \'{html.find(id="firstHeading").text}\'')
+            pass
 
     if say:
         print(f'{root}')
