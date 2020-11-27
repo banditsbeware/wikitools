@@ -48,10 +48,13 @@ def beautify(article):
     req = requests.get('https://en.wikipedia.org/wiki/'+leaf)
     return BeautifulSoup(req.text, 'html.parser')
 
+
 # get_contents - get the list of content section titles
 def get_toc(htm):
-    return [link.text for link in htm.find('div',id='toc').find_all('a')]
-
+    try:
+        return [link.text for link in htm.find('div',id='toc').find_all('a')]
+    except AttributeError:
+        return None
 
 # page_rand - return a random page
 def page_rand():
@@ -78,7 +81,7 @@ def cats(page, vis):
         pass
 
 
-# filter for good links
+# regex for good links
 def linkable(tag):
     if tag.has_attr('href') and tag.parent.name == 'p':
         ref = tag['href']

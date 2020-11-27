@@ -32,7 +32,10 @@ def print_cats():
         print(f'  {cat[9:]}')
 
 def print_contents():
-    pass
+    toc = user_pg.toc
+    for i in range(len(toc)):
+        if toc[i][0] == toc[i-1][0]: print('  ',end='')
+        print(toc[i])
 
 def new_page():
     global user_pg
