@@ -9,6 +9,7 @@ import requests
 
 class page:
     def __init__(self, query='Special:Random'):
+        print('initializing page...')
         self.htm = beautify(query)
         if len(self.htm(id='noarticletext')):
             print(f'unable to find {query}.\nhere\'s a random page')
@@ -18,9 +19,16 @@ class page:
         self.hcats = cats(self.htm, 'hidden')
         self.toc = get_toc(self.htm)
         self.links = get_links(self.title)
+        self.related = None
 
-    def is_cat(self, cat):
-        return 'Category:'+cat in self.cats
+    def generate_related(self):
+        self.related = set()
+        for i,cat in enumerate(self.cats):
+            print(f'category {i+1}/{len(self.cats)} ({cat}) ...',end='\r')
+            dp = deep_pages(cat)
+            print(f'category {i+1}/{len(self.cats)} ({cat}) ... found {len(dp)}')
+            self.related |= dp
+        print(f'found {len(self.related)} related pages')
 
     def __repr__(self):
         return 'page()'
@@ -58,6 +66,7 @@ def get_toc(htm):
     except AttributeError:
         return None
 
+
 # page_rand - return a random page
 def page_rand():
     htm = beautify('Special:Random')
@@ -76,7 +85,7 @@ def cats(htm, vis):
         raise ValueError('vis must be \'normal\' or \'hidden\'')
     xpr = 'mw-'+vis+'-catlinks'
     try:
-        return ['Category:'+c.text for c in htm.find(id=xpr).find_all('a')[1:]]
+        return [c.text for c in htm.find(id=xpr).find_all('a')[1:]]
     except AttributeError:
         # print(f'{page} has no {vis} categories')
         pass
@@ -127,9 +136,9 @@ def pages_in(category, n=0):
     htm = beautify('Category:' + category.replace(' ','_'))
     try:
         pgs = [a.text for a in htm.find(id='mw-pages').find(class_='mw-content-ltr').find_all('a')]
-    except AttributeError: return False
+    except AttributeError: return set()
     if 0 < n and n <= len(pgs): return sample(pgs, n)
-    return pgs
+    return set(pgs)
 
 
 # get n categories selected randomly from a category
@@ -138,16 +147,13 @@ def categories_in(category, n=0):
     htm = beautify('Category:' + category.replace(' ','_'))
     try:
         cts = [i.find('a').text for i in htm.find_all('div', class_='CategoryTreeItem')]
-    except AttributeError: return False
+    except AttributeError: return set()
     if 0 < n and n < len(cts): return sample(cts, n)
-    return cts
+    return set(cts)
 
 
 # get all pages within category and direct subcategories
 def deep_pages(category):
-    if not pages_in(category): pgs = set()
-    else: pgs = set(pages_in(category))
-    for c in categories_in(category):
-        if not pages_in(c): continue
-        pgs |= set(pages_in(c))
+    pgs = pages_in(category)
+    for c in categories_in(category): pgs |= pages_in(c)
     return pgs

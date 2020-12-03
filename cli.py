@@ -31,7 +31,7 @@ def print_cats():
     global user_pg
     print('\nyour page\'s categories: ')
     for cat in user_pg.cats:
-        print(f'  {cat[9:]}')
+        print(f'  {cat}')
 
 def print_toc():
     global user_pg
@@ -42,6 +42,16 @@ def print_toc():
             print(toc[i])
     else:
         print('no table of contents found.')
+
+def print_related():
+    global user_pg
+    if user_pg.related is None:
+        k = input('generate related pages? (y/n) ')
+        if k == 'n': return
+        user_pg.generate_related()
+    k = input(f'print all {len(user_pg.related)}? (y/n) ')
+    if k == 'y':
+        for p in user_pg.related: print(f'  {p}')
 
 def new_page():
     global user_pg
@@ -70,6 +80,7 @@ while True:
     n = prompt()
     if n == 'c': print_cats()
     if n == 'l': print_toc()
+    if n == 'r': print_related()
     if n == 'n': new_page()
     if n == 'h': print_commands()
     if n == 'j': take_journey()
