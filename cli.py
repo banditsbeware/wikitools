@@ -7,9 +7,10 @@ from wikitools import *
 from random import sample
 
 comm = dict()
-comm['c'] = 'print page categories'
-comm['l'] = 'print \'contents\' list'
-comm['r'] = 'print related pages'
+comm['c'] = 'list page categories'
+comm['l'] = 'view table of contents'
+comm['r'] = 'find related pages'
+comm['a'] = 'list directly linked pages'
 comm['n'] = 'get a new page'
 comm['j'] = 'take a journey'
 comm['h'] = 'display commands'
@@ -52,6 +53,11 @@ def print_related():
     if k == 'y':
         for p in user_pg.related: print(f'  {p}')
 
+def print_linked():
+    global user_pg
+    for link in user_pg.links:
+        print(f' ・{link}')
+
 def new_page():
     global user_pg
     n = input('\nrandom page? (y/n) ')
@@ -85,6 +91,7 @@ while True:
     if n == 'c': print_cats()
     if n == 'l': print_toc()
     if n == 'r': print_related()
+    if n == 'a': print_linked()
     if n == 'n': new_page()
     if n == 'h': print_commands()
     if n == 'j': take_journey()
