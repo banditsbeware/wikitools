@@ -121,11 +121,24 @@ def telephone(start, n, say=0):
     return log
 
 
-"""
-cat_pages - return a list of n wikipedia pages randomly selected from a category,
-and its subcategories. default value for n will return the entire list.
-set subs to 0 to limit search to only pages in top level category.
-"""
+# get n pages selected randomly from a category
+# n=0 will return all pages
+def pages_in(category, n=0):
+    htm = beautify('Category:' + category.replace(' ','_'))
+    pgs = [a.text for a in htm.find(id='mw-pages').find(class_='mw-content-ltr').find_all('a')]
+    if 0 < n and n <= len(pgs): return sample(pgs, n)
+    return pgs
+
+
+# get n categories selected randomly from a category
+# n=0 will return all categories
+def categories_in(category, n=0):
+    htm = beautify('Category:' + category.replace(' ','_'))
+    cts = [i.find('a').text for i in htm.find_all('div', class_='CategoryTreeItem')]
+    if 0 < n and n < len(cts): return sample(cts, n)
+    return cts
+
+
 
 def cat_pages(root, n=0, subs=1, say=False):
     root = 'Category:' + root.replace(' ','_')
