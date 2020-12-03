@@ -125,7 +125,9 @@ def telephone(start, n, say=0):
 # n=0 will return all pages
 def pages_in(category, n=0):
     htm = beautify('Category:' + category.replace(' ','_'))
-    pgs = [a.text for a in htm.find(id='mw-pages').find(class_='mw-content-ltr').find_all('a')]
+    try:
+        pgs = [a.text for a in htm.find(id='mw-pages').find(class_='mw-content-ltr').find_all('a')]
+    except AttributeError: return False
     if 0 < n and n <= len(pgs): return sample(pgs, n)
     return pgs
 
@@ -134,39 +136,18 @@ def pages_in(category, n=0):
 # n=0 will return all categories
 def categories_in(category, n=0):
     htm = beautify('Category:' + category.replace(' ','_'))
-    cts = [i.find('a').text for i in htm.find_all('div', class_='CategoryTreeItem')]
+    try:
+        cts = [i.find('a').text for i in htm.find_all('div', class_='CategoryTreeItem')]
+    except AttributeError: return False
     if 0 < n and n < len(cts): return sample(cts, n)
     return cts
 
 
-
-def cat_pages(root, n=0, subs=1, say=False):
-    root = 'Category:' + root.replace(' ','_')
-    master = []
-    html = beautify(root)
-
-    try:
-        page_groups = html.find(id='mw-pages').find_all('div', class_='mw-category-group')
-        for g in page_groups:
-            for li in g.find_all('li'):
-                if li.text.startswith('Template:'): continue
-                master.append(li.text)
-    except AttributeError:
-        #print(f'no pages found for \'{html.find(id="firstHeading").text}\'')
-        pass
-
-    if subs:
-        try:
-            subcat_groups = html.find(id='mw-subcategories').find_all('div', class_='mw-category-group')
-            for g in subcat_groups:
-                for li in g.find_all('li'):
-                    text = cat_pages(li.find('a').text, subs=0)
-                    if text: master += text
-        except AttributeError:
-            # print(f'no subcategories found for \'{html.find(id="firstHeading").text}\'')
-            pass
-
-    if say:
-        print(f'{root}')
-        for pg in master: print(f' - {pg}')
-    else: return master if (n==0 or n>len(master)) else sample(master, n)
+# get all pages within category and direct subcategories
+def deep_pages(category):
+    if not pages_in(category): pgs = set()
+    else: pgs = set(pages_in(category))
+    for c in categories_in(category):
+        if not pages_in(c): continue
+        pgs |= set(pages_in(c))
+    return pgs
