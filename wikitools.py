@@ -9,7 +9,6 @@ import requests
 
 class page:
     def __init__(self, query='Special:Random'):
-        print('initializing page...')
         self.htm = beautify(query)
         if len(self.htm(id='noarticletext')):
             print(f'unable to find {query}.\nhere\'s a random page')
@@ -23,10 +22,12 @@ class page:
 
     def generate_related(self):
         self.related = set()
-        for i,cat in enumerate(self.cats):
-            print(f'category {i+1}/{len(self.cats)} ({cat}) ...',end='\r')
-            dp = deep_pages(cat)
-            print(f'category {i+1}/{len(self.cats)} ({cat}) ... found {len(dp)}')
+        strs = [f' {i+1}/{len(self.cats)}: {cat}' for i,cat in enumerate(self.cats)]
+        maxlen = max([len(s) for s in strs])
+        for i,s in enumerate(strs):
+            print(f'{s:{maxlen}}',end='\r')
+            dp = deep_pages(self.cats[i])
+            print(f'{s:{maxlen}} found {len(dp)}')
             self.related |= dp
         print(f'found {len(self.related)} related pages')
 
