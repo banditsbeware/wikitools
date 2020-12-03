@@ -6,10 +6,6 @@ author: david rademacher
 from wikitools import *
 from random import sample
 
-print('initializing WikiTools CLI...')
-user_pg = page()
-print('enter \'h\' for help ✔︎')
-
 comm = dict()
 comm['c'] = 'print page categories'
 comm['l'] = 'print \'contents\' list'
@@ -57,16 +53,16 @@ def new_page():
     global user_pg
     n = input('\nrandom page? (y/n) ')
     if n not in ['y','n']: new_page()
-    if n == 'y': user_pg = page()
+    if n == 'y': user_pg = page(page_rand())
     if n == 'n':
         qry = input('query: ')
         res = search(qry)
         while isinstance(res, list):
-            print(f'\nno page found for \"{qry}\".\nsome suggestions:')
+            print(f'\nno page found for \'{qry}\'.\nsome suggestions:')
             for sg in res:
                 print(f' ・{sg}')
             res = search(input('\nquery: '))
-        user_pg = res
+        user_pg = page(res)
 
 def take_journey():
     global user_pg
@@ -75,6 +71,11 @@ def take_journey():
     print()
     dest = journey(user_pg.title, int(n))[-1]
     if k == 'y': user_pg = page(dest)
+
+print('WikiTools CLI')
+user_pg = []
+new_page()
+print('enter \'h\' for help ✔︎')
 
 while True:
     n = prompt()

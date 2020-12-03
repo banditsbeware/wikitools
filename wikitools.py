@@ -8,11 +8,8 @@ from bs4 import BeautifulSoup
 import requests
 
 class page:
-    def __init__(self, query='Special:Random'):
+    def __init__(self, query):
         self.htm = beautify(query)
-        if len(self.htm(id='noarticletext')):
-            print(f'unable to find {query}.\nhere\'s a random page')
-            self.htm = beautify('Special:Random')
         self.title = self.htm.find(id='firstHeading').text
         self.cats = cats(self.htm, 'normal')
         self.hcats = cats(self.htm, 'hidden')
@@ -38,23 +35,26 @@ class page:
         return self.title
 
 
-search_stem = 'https://en.wikipedia.org/wiki/Special:Search?search='
+search_stem = 'https://en.wikipedia.org/w/index.php?search='
+search_leaf = '&title=Special%3ASearch&fulltext=1&ns0=1'
+
 # fuzzier search than beautify
 # returns a list of possible results for the query.
 # return a page if query exists.
 def search(query):
-    #query = query.replace(' ','+')
-    req = requests.get(search_stem + query + '&ns0=1')
-    results = BeautifulSoup(req.text, 'html.parser')
-    try:
-        return [link.text for link in results.find('ul',class_='mw-search-results').find_all('a')]
-    except AttributeError:
-        return page(query)
+    print(f'search({query})')
+    query = query.replace(' ','+')
+    req = requests.get(search_stem + query + search_leaf)
+    htm = BeautifulSoup(req.text, 'html.parser')
+    links = [result.find('a').text for result in htm.find_all('li',class_='mw-search-result')]
+    if htm.find_all('p',class_='mw-search-exists'):
+        return links[0]
+    else:
+        return links
 
 
 # beautify - get the BeautifulSoup of a wikipedia article
 def beautify(article):
-    if isinstance(article, list): raise ValueError(f'beautify({article})\n\ncannot beautify a list\n')
     leaf = article.replace(' ','_')
     req = requests.get('https://en.wikipedia.org/wiki/'+leaf)
     return BeautifulSoup(req.text, 'html.parser')
