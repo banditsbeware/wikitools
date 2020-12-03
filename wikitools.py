@@ -14,9 +14,10 @@ class page:
             print(f'unable to find {query}.\nhere\'s a random page')
             self.htm = beautify('Special:Random')
         self.title = self.htm.find(id='firstHeading').text
-        self.cats = cats(self.title, 'normal')
-        self.hcats = cats(self.title, 'hidden')
+        self.cats = cats(self.htm, 'normal')
+        self.hcats = cats(self.htm, 'hidden')
         self.toc = get_toc(self.htm)
+        self.links = get_links(self.title)
 
     def is_cat(self, cat):
         return 'Category:'+cat in self.cats
@@ -44,7 +45,8 @@ def search(query):
 
 # beautify - get the BeautifulSoup of a wikipedia article
 def beautify(article):
-    leaf = article[0] if isinstance(article, list) else article
+    if isinstance(article, list): raise ValueError(f'beautify({article})\n\ncannot beautify a list\n')
+    leaf = article.replace(' ','_')
     req = requests.get('https://en.wikipedia.org/wiki/'+leaf)
     return BeautifulSoup(req.text, 'html.parser')
 
@@ -69,10 +71,9 @@ def cat_rand():
 
 
 # cats - return a list of categories for a page (type: 'normal' or 'hidden')
-def cats(page, vis):
+def cats(htm, vis):
     if vis not in ['normal', 'hidden']:
         raise ValueError('vis must be \'normal\' or \'hidden\'')
-    htm = beautify(page)
     xpr = 'mw-'+vis+'-catlinks'
     try:
         return ['Category:'+c.text for c in htm.find(id=xpr).find_all('a')[1:]]

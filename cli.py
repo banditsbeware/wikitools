@@ -24,18 +24,24 @@ def print_commands():
         print(f' {k} -> {v}')
 
 def prompt():
+    global user_pg
     return input(f'\n▶︎ {user_pg} ◀︎\n  .: ')
 
 def print_cats():
+    global user_pg
     print('\nyour page\'s categories: ')
     for cat in user_pg.cats:
         print(f'  {cat[9:]}')
 
-def print_contents():
+def print_toc():
+    global user_pg
     toc = user_pg.toc
-    for i in range(len(toc)):
-        if toc[i][0] == toc[i-1][0]: print('  ',end='')
-        print(toc[i])
+    if toc is not None:
+        for i in range(len(toc)):
+            if toc[i][0] == toc[i-1][0]: print('  ',end='')
+            print(toc[i])
+    else:
+        print('no table of contents found.')
 
 def new_page():
     global user_pg
@@ -56,13 +62,14 @@ def take_journey():
     global user_pg
     n = input('how far? (integer) ')
     k = input('one way ticket? (y/n) ')
+    print()
     dest = journey(user_pg.title, int(n))[-1]
     if k == 'y': user_pg = page(dest)
 
 while True:
     n = prompt()
     if n == 'c': print_cats()
-    if n == 'l': print_contents()
+    if n == 'l': print_toc()
     if n == 'n': new_page()
     if n == 'h': print_commands()
     if n == 'j': take_journey()
