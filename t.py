@@ -1,4 +1,6 @@
 from wikitools import *
 
-q = input('query: ')
-print(search(q))
+p = page('Oology')
+
+print(p.toc)
+print(read_section(p, 4))

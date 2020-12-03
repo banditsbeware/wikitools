@@ -34,8 +34,11 @@ def print_toc():
     toc = user_pg.toc
     if toc is not None:
         for i in range(len(toc)):
-            if toc[i][0] == toc[i-1][0]: print('  ',end='')
-            print(toc[i])
+            if toc[i][0][0] == toc[i-1][0][0]: print('  ',end='')
+            print(f'{i+1}. {toc[i][1]}')
+        sec = int(input('\nread: '))
+        if sec:
+            print(read_section(user_pg, sec-1))
     else:
         print('no table of contents found.')
 

@@ -42,7 +42,6 @@ search_leaf = '&title=Special%3ASearch&fulltext=1&ns0=1'
 # returns a list of possible results for the query.
 # return a page if query exists.
 def search(query):
-    print(f'search({query})')
     query = query.replace(' ','+')
     req = requests.get(search_stem + query + search_leaf)
     htm = BeautifulSoup(req.text, 'html.parser')
@@ -62,10 +61,40 @@ def beautify(article):
 
 # get_contents - get the list of content section titles
 def get_toc(htm):
+    toc = []
     try:
-        return [link.text for link in htm.find('div',id='toc').find_all('a')]
+        for item in htm.find('div',id='toc').find_all('li'):
+            num = item.find('span',class_='tocnumber').text
+            str = item.find('span',class_='toctext').text
+            toc.append((num, str))
+        return toc
     except AttributeError:
         return None
+
+
+# read_section - print readable contents from section sec of page
+def read_section(page, sec):
+    blob = ''
+    section = page.toc[sec][1].replace(' ','_')
+    htm = page.htm
+
+    # find start heading
+    for title in htm.find_all('span',class_='mw-headline'):
+        if title['id'] == section: section_head = title.parent
+
+    # add paragraph text, stopping before next section
+    blob += f'\n〈 {section_head.text} 〉\n'
+    for sib in section_head.next_siblings:
+        if sib.name == 'h3': blob += f'〈 {sib.text} 〉\n'
+        if sib.name == 'p': blob += f'\t{sib.text}\n'
+        if sib.name == 'h2': break
+
+    # remove brackets (references)
+    s = blob.find('[')
+    while s >= 0:
+        blob = blob[:s] + blob[blob.find(']')+1:]
+        s = blob.find('[')
+    return blob
 
 
 # page_rand - return a random page
